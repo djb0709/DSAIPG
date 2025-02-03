@@ -8,6 +8,7 @@ import com.phasmidsoftware.dsaipg.util.Benchmark_Timer;
 import com.phasmidsoftware.dsaipg.util.TimeLogger;
 import com.phasmidsoftware.dsaipg.util.Utilities;
 
+import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -103,7 +104,14 @@ public class ThreeSumBenchmark {
     private void benchmarkThreeSum(final String description, final Consumer<int[]> function, int n, final TimeLogger[] timeLoggers) {
         if (description.equals("ThreeSumCubic") && n > 4000) return;
         // TO BE IMPLEMENTED 
-throw new RuntimeException("implementation missing");
+
+        Supplier<int[]> supplier1 = ()-> Arrays.copyOf(supplier.get(), n);
+        Benchmark_Timer<int[]> timer = new Benchmark_Timer<>(description,function);
+
+        double time = timer.runFromSupplier(supplier1,runs);
+        for (TimeLogger logger: timeLoggers){
+            logger.log(description,time,n);
+        }
     }
 
     /**

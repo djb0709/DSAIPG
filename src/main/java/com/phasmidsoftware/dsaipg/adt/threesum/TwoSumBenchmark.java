@@ -7,6 +7,7 @@ package com.phasmidsoftware.dsaipg.adt.threesum;
 import com.phasmidsoftware.dsaipg.util.Benchmark_Timer;
 import com.phasmidsoftware.dsaipg.util.TimeLogger;
 
+import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -90,8 +91,13 @@ public class TwoSumBenchmark {
      */
     private void benchmarkTwoSum(final String description, final Consumer<int[]> function, int n, final TimeLogger[] timeLoggers) {
         if (n > 8000) return;
-        // TO BE IMPLEMENTED 
-throw new RuntimeException("implementation missing");
+        // TO BE IMPLEMENTED
+        Supplier<int[]> supplierCopy = () -> Arrays.copyOf(supplier.get(), n);
+       Benchmark_Timer<int[]> timer = new Benchmark_Timer<>(description,function);
+       double time =timer.runFromSupplier(supplierCopy,runs);
+       for (TimeLogger logger: timeLoggers){
+           logger.log(description,time,n);
+       }
     }
 
     /**
