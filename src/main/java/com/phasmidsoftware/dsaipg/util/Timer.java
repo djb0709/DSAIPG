@@ -65,19 +65,25 @@ public class Timer {
      */
     public <T, U> double repeat(int n, boolean warmup, Supplier<T> supplier, Function<T, U> function, UnaryOperator<T> preFunction, Consumer<U> postFunction) {
         // TO BE IMPLEMENTED : note that the timer is running when this method is called and should still be running when it returns.
-            pause();
-            double total = 0.0;
-            for (int i = 0; i < n; i++) {
-                T t = supplier.get();
-                if (preFunction != null) t = preFunction.apply(t);
-                resume();
-                U u = function.apply(t);
-                pauseAndLap();
-                if (postFunction != null) postFunction.accept(u);
-                total+=millisecs();
+        if (n == 0) return 0.0;
+        pause();
+        double total = 0.0;
+        for (int i = 0; i < n; i++) {
+            T t = supplier.get();
+            if (preFunction != null) t = preFunction.apply(t);
 
-            }
-         return total/n;
+            resume();
+            long start =getClock();
+            U u = function.apply(t);
+            long end=getClock();
+            pause();
+
+            if (postFunction != null) postFunction.accept(u);
+            total+=toMillisecs(end-start);
+            resume();
+            pauseAndLap();
+        }
+        return total/n ;
         // END SOLUTION
     }
 
