@@ -3,34 +3,45 @@ package com.phasmidsoftware.dsaipg.adt.pq;
 import com.phasmidsoftware.dsaipg.util.PrivateMethodTester;
 import org.junit.Test;
 
-import java.util.Comparator;
-import java.util.Iterator;
+import java.util.*;
 
+import static java.util.Collections.shuffle;
 import static org.junit.Assert.*;
 
 @SuppressWarnings("ConstantConditions")
 public class PriorityQueueTest {
 
     @Test
-    public void testUnordered1() {
+    public void testInverted1a() {
         String[] binHeap = new String[3];
         binHeap[1] = "A";
         binHeap[2] = "B";
         boolean max = false;
         Iterable<String> pq = new PriorityQueue<>(max, binHeap, 1, 2, Comparator.comparing(String::toString), false);
         final PrivateMethodTester tester = new PrivateMethodTester(pq);
-        assertEquals(max, tester.invokePrivate("unordered", 1, 2));
+        assertEquals(max, tester.invokePrivate("inverted", 1, 2));
     }
 
     @Test
-    public void testUnordered2() {
+    public void testInverted1b() {
+        String[] binHeap = new String[3];
+        binHeap[0] = "A";
+        binHeap[1] = "B";
+        boolean max = false;
+        Iterable<String> pq = new PriorityQueue<>(max, binHeap, 0, 2, Comparator.comparing(String::toString), false);
+        final PrivateMethodTester tester = new PrivateMethodTester(pq);
+        assertEquals(max, tester.invokePrivate("inverted", 0, 1));
+    }
+
+    @Test
+    public void testInverted2() {
         String[] binHeap = new String[3];
         binHeap[1] = "A";
         binHeap[2] = "B";
         boolean max = true;
         Iterable<String> pq = new PriorityQueue<>(max, binHeap, 1, 2, Comparator.comparing(String::toString), false);
         final PrivateMethodTester tester = new PrivateMethodTester(pq);
-        assertEquals(max, tester.invokePrivate("unordered", 1, 2));
+        assertEquals(max, tester.invokePrivate("inverted", 1, 2));
     }
 
     @Test
@@ -92,19 +103,35 @@ public class PriorityQueueTest {
     }
 
     @Test
-    public void testSink0() {
-        String[] binHeap = new String[4];
+    public void testSink0a() {
+        String[] binHeap = new String[3];
         String a = "A";
         String b = "B";
         String c = "C";
-        binHeap[0] = a;
-        binHeap[1] = b;
-        binHeap[2] = c;
+        binHeap[0] = b;
+        binHeap[1] = c;
+        binHeap[2] = a;
         Iterable<String> pq = new PriorityQueue<>(true, binHeap, 0, 3, Comparator.comparing(String::toString), false);
         final PrivateMethodTester tester = new PrivateMethodTester(pq);
         tester.invokePrivate("sink", 0);
         assertEquals(c, tester.invokePrivate("peek", 0));
         assertEquals(a, tester.invokePrivate("peek", 2));
+    }
+
+    @Test
+    public void testSink0b() {
+        String[] binHeap = new String[4];
+        String a = "A";
+        String b = "B";
+        String c = "C";
+        binHeap[1] = a;
+        binHeap[2] = b;
+        binHeap[3] = c;
+        Iterable<String> pq = new PriorityQueue<>(true, binHeap, 1, 3, Comparator.comparing(String::toString), false);
+        final PrivateMethodTester tester = new PrivateMethodTester(pq);
+        tester.invokePrivate("sink", 1);
+        assertEquals(c, tester.invokePrivate("peek", 1));
+        assertEquals(a, tester.invokePrivate("peek", 3));
     }
 
     @Test
@@ -130,7 +157,7 @@ public class PriorityQueueTest {
         pq.give(key);
         assertEquals(1, pq.size());
         final PrivateMethodTester tester = new PrivateMethodTester(pq);
-        assertEquals(key, tester.invokePrivate("peek", 1));
+        assertEquals(key, tester.invokePrivate("peek", 0));
     }
 
     @Test
@@ -141,10 +168,10 @@ public class PriorityQueueTest {
         String key = "A";
         pq.give(null); // This will never survive so it might as well be null
         assertEquals(1, pq.size());
-        assertNull(tester.invokePrivate("peek", 1));
+        assertNull(tester.invokePrivate("peek", 0));
         pq.give(key);
         assertEquals(1, pq.size());
-        assertEquals(key, tester.invokePrivate("peek", 1));
+        assertEquals(key, tester.invokePrivate("peek", 0));
     }
 
     @Test
@@ -164,8 +191,8 @@ public class PriorityQueueTest {
         pq.give(a);
         pq.give(b);
         final PrivateMethodTester tester = new PrivateMethodTester(pq);
-        assertEquals(a, tester.invokePrivate("peek", 2));
-        assertEquals(b, tester.invokePrivate("peek", 1));
+        assertEquals(a, tester.invokePrivate("peek", 1));
+        assertEquals(b, tester.invokePrivate("peek", 0));
         assertEquals(b, pq.take());
         assertEquals(a, pq.take());
         assertTrue(pq.isEmpty());
@@ -287,5 +314,87 @@ public class PriorityQueueTest {
         Iterable<String> pq = new PriorityQueue<>(10, false, Comparator.comparing(String::toString));
         final PrivateMethodTester tester = new PrivateMethodTester(pq);
         assertEquals(false, tester.invokePrivate("getMax"));
+    }
+
+    @Test
+    public void testTake4() throws PQException {
+        String[] binHeap = new String[5];
+        binHeap[1] = "D";
+        binHeap[2] = "A";
+        binHeap[3] = "C";
+        binHeap[4] = "B";
+        PriorityQueue<String> pq = new PriorityQueue<>(true, binHeap, 1, 4, Comparator.comparing(String::toString), false);
+        String takenValue = pq.take();
+        assertEquals("D", takenValue); // Ensure the max-heap returns the largest element.
+        assertEquals(3, pq.size()); // Ensure size is reduced after take.
+    }
+
+    @Test
+    public void testTake5() throws PQException {
+        String[] binHeap = new String[5];
+        binHeap[1] = "A";
+        binHeap[2] = "C";
+        binHeap[3] = "B";
+        binHeap[4] = "Z";
+        PriorityQueue<String> pq = new PriorityQueue<>(false, binHeap, 1, 4, Comparator.comparing(String::toString), false);
+        String takenValue = pq.take();
+        assertEquals("A", takenValue); // Ensure the min-heap returns the smallest element.
+        assertEquals(3, pq.size()); // Ensure size is reduced after take.
+    }
+
+    @Test(expected = PQException.class)
+    public void testTake6() throws PQException {
+        PriorityQueue<String> pq = new PriorityQueue<>(5, Comparator.comparing(String::toString));
+        pq.take(); // Attempting to take from an empty queue should throw PQException.
+    }
+
+    @Test
+    public void testPriorityQueueList() throws PQException {
+        Integer[] binHeap = new Integer[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
+        List<Integer> list = Arrays.asList(binHeap);
+        shuffle(list, new Random(1234567890L));
+        PriorityQueue<Integer> pq = new PriorityQueue<>(list, Integer::compare);
+        assertEquals(Integer.valueOf(19), pq.take());
+        assertEquals(Integer.valueOf(18), pq.take());
+        assertEquals(Integer.valueOf(17), pq.take());
+        assertEquals(Integer.valueOf(16), pq.take());
+        assertEquals(Integer.valueOf(15), pq.take());
+        assertEquals(Integer.valueOf(14), pq.take());
+        assertEquals(Integer.valueOf(13), pq.take());
+        assertEquals(Integer.valueOf(12), pq.take());
+        assertEquals(Integer.valueOf(11), pq.take());
+        assertEquals(Integer.valueOf(10), pq.take());
+        assertEquals(Integer.valueOf(9), pq.take());
+        assertEquals(Integer.valueOf(8), pq.take());
+        assertEquals(Integer.valueOf(7), pq.take());
+        assertEquals(Integer.valueOf(6), pq.take());
+        assertEquals(Integer.valueOf(5), pq.take());
+        assertEquals(Integer.valueOf(4), pq.take());
+        assertEquals(Integer.valueOf(3), pq.take());
+        assertEquals(Integer.valueOf(2), pq.take());
+        assertEquals(Integer.valueOf(1), pq.take());
+        assertEquals(Integer.valueOf(0), pq.take());
+    }
+
+    @Test
+    public void testDoHeapifya() throws PQException {
+        String[] binHeap = new String[]{null, "C", "D", "A", "E", "B"};
+        boolean max = false;
+        PriorityQueue<String> pq = new PriorityQueue<>(max, binHeap, 1, 5, Comparator.comparing(String::toString), false);
+        final PrivateMethodTester tester = new PrivateMethodTester(pq);
+        assertEquals(5, tester.invokePrivate("doHeapifyStandard", 2));
+        assertEquals(3, tester.invokePrivate("doHeapifyStandard", 1));
+
+    }
+
+    @Test
+    public void testDoHeapifyb() throws PQException {
+        String[] binHeap = new String[]{"C", "D", "A", "E", "B"};
+        boolean max = false;
+        PriorityQueue<String> pq = new PriorityQueue<>(max, binHeap, 0, 5, Comparator.comparing(String::toString), false);
+        final PrivateMethodTester tester = new PrivateMethodTester(pq);
+        assertEquals(4, tester.invokePrivate("doHeapifyStandard", 1));
+        assertEquals(2, tester.invokePrivate("doHeapifyStandard", 0));
+
     }
 }

@@ -98,6 +98,24 @@ public class PriorityQueue<K> implements Iterable<K> {
     }
 
     /**
+     * Secondary constructor which takes a Collection to be added immediately and a comparator.
+     * Other parameter values: n = ks.size; max = true; first = 0; floyd = true.
+     * This constructor uses the O(n) heap construction method (sometimes also known as "Floyd's Trick.").
+     * This constructor is suitable for use by HeapSort.
+     *
+     * @param ks         a Collection of K elements.
+     * @param comparator a comparator for the type K
+     */
+    public PriorityQueue(Collection<K> ks, Comparator<K> comparator) {
+        this(ks.size(), comparator);
+        int i = 0;
+        for (K k : ks) binHeap[i++] = k;
+        last = ks.size();
+        int k = (last + 1) / 2 - 1;
+        for (; k >= 0; k--) sink(k);
+    }
+
+    /**
      * @return true if the current size is zero.
      */
     public boolean isEmpty() {
@@ -117,8 +135,12 @@ public class PriorityQueue<K> implements Iterable<K> {
      * @param key the value of the key to give
      */
     public void give(K key) {
-        if (last == binHeap.length - first)
+        if (last == binHeap.length - first){
+            K removed = binHeap[last+first-1];//get the last element
+            spilledList.add(removed);//add the last element to the spilled list
             last--; // if we are already at capacity, then we arbitrarily trash the least eligible element
+        }
+
         // (even if it's more eligible than key).
         binHeap[++last + first - 1] = key; // insert the key into the binary heap just after the last element
         swimUp(last + first - 1); // reorder the binary heap
@@ -158,7 +180,7 @@ public class PriorityQueue<K> implements Iterable<K> {
      * Sink the element at index k down
      */
     void sink(@SuppressWarnings("SameParameterValue") int k) {
-        doHeapify(k, (a, b) -> !unordered(a, b));
+        doHeapifyStandard(k);
     }
 
     /**
@@ -167,7 +189,7 @@ public class PriorityQueue<K> implements Iterable<K> {
      * @param k the starting index of the element in the heap to be adjusted.
      */
     void snake(@SuppressWarnings("SameParameterValue") int k) {
-        swimUp(doHeapify(k, (a, b) -> !unordered(a, b)));
+        swimUp(doHeapify(k, (a, b) -> false));
     }
 
     /**
@@ -175,7 +197,7 @@ public class PriorityQueue<K> implements Iterable<K> {
      */
     void swimUp(int k) {
         int i = k;
-        while (i > first && unordered(parent(i), i)) {
+        while (i > first && inverted(parent(i), i)) {
             swap(i, parent(i));
             i = parent(i);
         }
@@ -190,10 +212,9 @@ public class PriorityQueue<K> implements Iterable<K> {
      * @param j the higher index, numerically
      * @return true if the values are out of order.
      */
-    boolean unordered(int i, int j) {
+    boolean inverted(int i, int j) {
         return (comparator.compare(binHeap[i], binHeap[j]) > 0) ^ max;
     }
-
     /**
      * Non-mutating iterator over all values of this PriorityQueue.
      * NOTE: after the first element, there is no definite ordering of the remaining elements.
@@ -223,12 +244,24 @@ public class PriorityQueue<K> implements Iterable<K> {
         int i = k;
         while (firstChild(i) <= last + first - 1) {
             int j = firstChild(i);
-            if (j < last + first - 1 && unordered(j, j + 1)) j++;
+            if (j < last + first - 1 && inverted(j, j + 1)) j++;
             if (p.test(i, j)) break;
             swap(i, j);
             i = j;
         }
         return i;
+    }
+    /**
+     * Adjusts a subtree rooted at index k to ensure it satisfies the heap property.
+     * The method reorganizes the binary heap by comparing parent and child nodes,
+     * swapping their positions if necessary, until the correct heap order is maintained.
+     *
+     * @param k the starting index of the element in the heap that needs to be adjusted.
+     *          That's to say, the root of the sub-heap.
+     * @return the final position of the element originally at index k after reorganization.
+     */
+    private int doHeapifyStandard(int k) {
+        return doHeapify(k, (a, b) -> !inverted(a, b));
     }
 
     /**
@@ -269,12 +302,20 @@ public class PriorityQueue<K> implements Iterable<K> {
         return max;
     }
 
+    //Method to get the spilled list
+    public List<K> getSpilledList() {
+        return spilledList;
+    }
+
     private final boolean max;
     private final int first;
     private final Comparator<K> comparator;
     private final K[] binHeap; // binHeap[i] is ith element of binary heap (first element is reserved)
     private int last; // number of elements in the binary heap
     private final boolean floyd; //Determine whether floyd's snake method is on or off inside the take method
+
+    private final List<K> spilledList = new ArrayList<>();//List to store the elements of the binary heap
+
 
     public static void main(String[] args) {
         doMain();
@@ -291,6 +332,7 @@ public class PriorityQueue<K> implements Iterable<K> {
         s1[3] = "D";
         s1[4] = "E";
         boolean max = true;
+        //if true do snake and sink else do sink
         boolean floyd = true;
         Iterable<String> PQ_string_floyd = new PriorityQueue<>(max, s1, 1, 5, Comparator.comparing(String::toString), floyd);
         Iterable<String> PQ_string_nofloyd = new PriorityQueue<>(max, s1, 1, 5, Comparator.comparing(String::toString), false);
