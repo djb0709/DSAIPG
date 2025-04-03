@@ -13,7 +13,7 @@ import java.util.Optional;
  * This class represents the board of the Tic-tac-toe game.
  * It is a 3x3 matrix of 0s, 1s, and -1s for O, X, and . respectively.
  */
-public class Position {
+public class  Position {
 
     /**
      * Parse a string of X, O, and . to form a Position.
@@ -64,8 +64,9 @@ public class Position {
         if (player == last) throw new RuntimeException("consecutive moves by same player: " + player);
         int[][] matrix = copyGrid();
         if (matrix[x][y] < 0) {
-            // TO BE IMPLEMENTED 
-             return null;
+            // TO BE IMPLEMENTED
+            matrix[x][y] = player;
+            return new Position(matrix, count + 1, player);
             // END SOLUTION
         }
         throw new RuntimeException("Position is occupied: " + x + ", " + y);
@@ -82,8 +83,8 @@ public class Position {
         for (int i = 0; i < gridSize; i++)
             for (int j = 0; j < gridSize; j++)
                 if (grid[i][j] < 0)
-                    // TO BE IMPLEMENTED 
-         ;
+                    // TO BE IMPLEMENTED
+                    result.add(new int[]{i, j});
         // END SOLUTION
         return result;
     }
@@ -144,8 +145,18 @@ public class Position {
      * @return true if there are three cells in a line that are the same and equal to the last player.
      */
     boolean threeInARow() {
-        // TO BE IMPLEMENTED 
-         return false;
+        // TO BE IMPLEMENTED
+        int[] target = new int[]{last, last, last};
+        for (int i = 0; i < gridSize; i++) {
+            if (Arrays.equals(projectRow(i), target)) return true;
+        }
+        for (int j = 0; j < gridSize; j++) {
+            if (Arrays.equals(projectCol(j), target)) return true;
+        }
+        if (Arrays.equals(projectDiag(true), target)) return true;
+        if (Arrays.equals(projectDiag(false), target)) return true;
+
+        return false;
         // END SOLUTION
     }
 
