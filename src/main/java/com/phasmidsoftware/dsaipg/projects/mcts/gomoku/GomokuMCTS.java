@@ -12,7 +12,7 @@ import java.util.*;
 public class GomokuMCTS {
     private final Node<Gomoku> root;
     private final double explorationParameter = Math.sqrt(2);
-    private int simulationCount = 2000;
+    private int simulationCount = 1000;
 
     // get the parent and child relationship
     private final Map<Node<Gomoku>, Node<Gomoku>> parentMap = new HashMap<>();
@@ -123,6 +123,31 @@ public class GomokuMCTS {
         }
 
         expandNode(root);
+
+        //apply the simalation with the chess board size and stage
+        int movesMade = ((Gomoku.GomokuState)root.state()).position().getCount();
+        int boardSize = GomokuPosition.getGridSize();
+
+        // adjust the simulation count based on the board size and moves made
+        if (boardSize <= 8) {
+            // small chess board strategy
+            if (movesMade < 10) {
+                simulationCount = 800;  // early stage
+            } else if (movesMade < 30) {
+                simulationCount = 1000; // mid stage
+            } else {
+                simulationCount = 1200; // late stage
+            }
+        } else {
+            // big chess board strategy
+            if (movesMade < 20) {
+                simulationCount = 1000; // early stage
+            } else if (movesMade < 60) {
+                simulationCount = 1500;
+            } else {
+                simulationCount = 2000;
+            }
+        }
 
         // simulate the game
         for (int i = 0; i < simulationCount; i++) {

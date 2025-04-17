@@ -9,7 +9,7 @@ public class GomokuPosition {
     private final int[][] grid;
     final int last;  // last player
     private final int count;  // chess count on the board
-    private  static int gridSize = 8;
+    private  static int gridSize = 15; // default board size is 15x15
     // board size now is 8x8
 
    // create a new board
@@ -47,6 +47,22 @@ public class GomokuPosition {
     public List<int[]> moves(int player) {
         if (player == last) throw new RuntimeException("error with : " + player);
 
+        //small chess board
+        if (gridSize <= 8 && count > 0) {
+            List<int[]> result = new ArrayList<>();
+            for (int i = 0; i < gridSize; i++) {
+                for (int j = 0; j < gridSize; j++) {
+                    if (grid[i][j] < 0) {
+                        result.add(new int[]{i, j});
+                    }
+                }
+            }
+            return result;
+        }
+
+
+
+        // big chess board
         // optimation: if the board is empty, return the center
         if (count==0){
             List<int[]> result = new ArrayList<>();
