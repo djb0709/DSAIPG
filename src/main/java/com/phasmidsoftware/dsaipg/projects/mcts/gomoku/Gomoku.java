@@ -78,7 +78,7 @@ public class Gomoku implements Game<Gomoku> {
     /**
      * gomoku  moves
      */
-    static class GomokuMove implements Move<Gomoku> {
+    public static class GomokuMove implements Move<Gomoku> {
         /**
          * get player
          */
@@ -109,7 +109,7 @@ public class Gomoku implements Game<Gomoku> {
     /**
      * inner class state
      */
-    class GomokuState implements State<Gomoku> {
+    public class GomokuState implements State<Gomoku> {
 
         @Override
         public Gomoku game() {

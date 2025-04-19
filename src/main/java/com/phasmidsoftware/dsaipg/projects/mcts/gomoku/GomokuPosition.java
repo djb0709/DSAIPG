@@ -7,7 +7,7 @@ import java.util.*;
  */
 public class GomokuPosition {
     private final int[][] grid;
-    final int last;  // last player
+    public final int last;  // last player
     private final int count;  // chess count on the board
     private  static int gridSize = 15; // default board size is 15x15
     // board size now is 8x8
@@ -231,5 +231,15 @@ public class GomokuPosition {
 
     public int getCount() {
         return count;
+    }
+
+    /**
+     * Get the stone at the specified position for ui
+     */
+    public int getStone(int row, int col) {
+        return grid[row][col];
+    }
+    private int getStone(GomokuPosition position, int row, int col) {
+        return position.getStone(row, col);
     }
 }
